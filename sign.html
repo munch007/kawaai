@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign Language Translator</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#111;
+    color:white;
+    margin:0;
+    text-align:center;
+}
+header{
+    background:#1f1f1f;
+    padding:15px;
+}
+.container{
+    padding:20px;
+}
+video{
+    width:80%;
+    max-width:700px;
+    border-radius:10px;
+    border:2px solid #444;
+}
+.panel{
+    margin-top:20px;
+    background:#222;
+    padding:15px;
+    border-radius:10px;
+}
+button{
+    padding:10px 20px;
+    margin:5px;
+    font-size:16px;
+    cursor:pointer;
+}
+#recognized{
+    font-size:24px;
+    color:#00ff88;
+}
+#sentence{
+    font-size:28px;
+    margin-top:15px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Sign Language → Text → Voice Translator</h1>
+</header>
+
+<div class="container">
+
+<video id="video" autoplay playsinline></video>
+
+<div class="panel">
+<button onclick="startCamera()">Start Camera</button>
+<button onclick="stopCamera()">Stop Camera</button>
+<button onclick="speakText()">Speak</button>
+<button onclick="clearText()">Clear</button>
+
+<h3>Detected Word</h3>
+<div id="recognized">Waiting...</div>
+
+<h3>Translated Sentence</h3>
+<div id="sentence">No signs detected yet.</div>
+</div>
+
+</div>
+
+<script>
+let stream;
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video:true
+        });
+
+        document.getElementById("video").srcObject = stream;
+
+        simulateRecognition();
+    } catch(err) {
+        alert("Camera access denied.");
+    }
+}
+
+function stopCamera() {
+    if(stream){
+        stream.getTracks().forEach(track=>track.stop());
+    }
+}
+
+function clearText(){
+    document.getElementById("recognized").innerText="Waiting...";
+    document.getElementById("sentence").innerText="No signs detected yet.";
+}
+
+function speakText(){
+    const text=document.getElementById("sentence").innerText;
+
+    const speech=new SpeechSynthesisUtterance(text);
+    speech.lang="en-US";
+
+    speechSynthesis.speak(speech);
+}
+
+function simulateRecognition(){
+
+    const samples=[
+        "HELLO",
+        "THANK YOU",
+        "PLEASE",
+        "YES",
+        "NO",
+        "HELP"
+    ];
+
+    setInterval(()=>{
+        let word=samples[Math.floor(Math.random()*samples.length)];
+
+        document.getElementById("recognized").innerText=word;
+        document.getElementById("sentence").innerText=word;
+    },3000);
+}
+</script>
+
+</body>
+</html>
