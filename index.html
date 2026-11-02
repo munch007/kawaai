@@ -1,133 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign Language Translator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASL / ISL Translator Prototype</title>
 
 <style>
 body{
-    font-family:Arial,sans-serif;
-    background:#111;
-    color:white;
     margin:0;
+    background:#121212;
+    color:white;
+    font-family:Arial,sans-serif;
     text-align:center;
 }
+
 header{
-    background:#1f1f1f;
+    background:#1e1e1e;
     padding:15px;
 }
-.container{
-    padding:20px;
-}
+
 video{
     width:80%;
-    max-width:700px;
-    border-radius:10px;
-    border:2px solid #444;
-}
-.panel{
+    max-width:800px;
+    border-radius:12px;
     margin-top:20px;
-    background:#222;
-    padding:15px;
-    border-radius:10px;
+    border:2px solid #333;
 }
+
+.panel{
+    width:80%;
+    max-width:800px;
+    margin:20px auto;
+    padding:15px;
+    background:#222;
+    border-radius:12px;
+}
+
 button{
-    padding:10px 20px;
+    padding:10px 18px;
     margin:5px;
-    font-size:16px;
+    border:none;
+    border-radius:8px;
     cursor:pointer;
 }
-#recognized{
-    font-size:24px;
-    color:#00ff88;
+
+.primary{
+    background:#00c853;
+    color:white;
 }
-#sentence{
+
+.stop{
+    background:#d50000;
+    color:white;
+}
+
+.info{
+    background:#2962ff;
+    color:white;
+}
+
+#word{
     font-size:28px;
-    margin-top:15px;
+    color:#00ff88;
+    font-weight:bold;
+}
+
+#sentence{
+    font-size:24px;
+    margin-top:10px;
+}
+
+#status{
+    color:#ccc;
 }
 </style>
 </head>
+
 <body>
 
 <header>
-<h1>Sign Language → Text → Voice Translator</h1>
+<h1>ASL / ISL → Text → Voice Translator</h1>
 </header>
-
-<div class="container">
 
 <video id="video" autoplay playsinline></video>
 
 <div class="panel">
-<button onclick="startCamera()">Start Camera</button>
-<button onclick="stopCamera()">Stop Camera</button>
-<button onclick="speakText()">Speak</button>
-<button onclick="clearText()">Clear</button>
+
+<button class="primary" onclick="startCamera()">Start Camera</button>
+<button class="stop" onclick="stopCamera()">Stop Camera</button>
+<button class="info" onclick="speakSentence()">Speak</button>
+<button onclick="clearTranscript()">Clear</button>
+
+<h3>Status</h3>
+<div id="status">Ready</div>
 
 <h3>Detected Word</h3>
-<div id="recognized">Waiting...</div>
+<div id="word">Waiting...</div>
 
-<h3>Translated Sentence</h3>
-<div id="sentence">No signs detected yet.</div>
-</div>
+<h3>Sentence</h3>
+<div id="sentence">No signs detected.</div>
 
 </div>
 
 <script>
-let stream;
 
-async function startCamera() {
-    try {
+let stream;
+let detectorInterval;
+
+async function startCamera(){
+
+    try{
+
         stream = await navigator.mediaDevices.getUserMedia({
             video:true
         });
 
         document.getElementById("video").srcObject = stream;
 
-        simulateRecognition();
-    } catch(err) {
-        alert("Camera access denied.");
+        document.getElementById("status").innerText =
+            "Camera Running";
+
+        startRecognitionPrototype();
+
+    }catch(e){
+
+        document.getElementById("status").innerText =
+            "Camera Permission Denied";
+
     }
 }
 
-function stopCamera() {
+function stopCamera(){
+
+    clearInterval(detectorInterval);
+
     if(stream){
-        stream.getTracks().forEach(track=>track.stop());
+        stream.getTracks().forEach(track => track.stop());
     }
+
+    document.getElementById("status").innerText =
+        "Stopped";
 }
 
-function clearText(){
-    document.getElementById("recognized").innerText="Waiting...";
-    document.getElementById("sentence").innerText="No signs detected yet.";
+function clearTranscript(){
+
+    document.getElementById("word").innerText =
+        "Waiting...";
+
+    document.getElementById("sentence").innerText =
+        "No signs detected.";
 }
 
-function speakText(){
-    const text=document.getElementById("sentence").innerText;
+function speakSentence(){
 
-    const speech=new SpeechSynthesisUtterance(text);
-    speech.lang="en-US";
+    const text =
+      document.getElementById("sentence").innerText;
+
+    const speech =
+      new SpeechSynthesisUtterance(text);
+
+    speech.lang = "en-US";
 
     speechSynthesis.speak(speech);
 }
 
-function simulateRecognition(){
+function startRecognitionPrototype(){
 
-    const samples=[
+    const demoSigns = [
         "HELLO",
         "THANK YOU",
         "PLEASE",
         "YES",
         "NO",
-        "HELP"
+        "HELP",
+        "GOOD MORNING",
+        "HOW ARE YOU",
+        "WELCOME"
     ];
 
-    setInterval(()=>{
-        let word=samples[Math.floor(Math.random()*samples.length)];
+    detectorInterval = setInterval(() => {
 
-        document.getElementById("recognized").innerText=word;
-        document.getElementById("sentence").innerText=word;
+        const sign =
+          demoSigns[Math.floor(Math.random()
+          * demoSigns.length)];
+
+        document.getElementById("word").innerText =
+            sign;
+
+        document.getElementById("sentence").innerText =
+            sign;
+
     },3000);
 }
+
 </script>
 
 </body>
